@@ -4,6 +4,8 @@ import 'package:todo_app/add_new_task_date_time.dart';
 import 'package:todo_app/category.dart';
 import 'package:todo_app/constants/color.dart';
 import 'package:todo_app/constants/tasktype.dart';
+import 'package:todo_app/model/todo.dart';
+import 'package:todo_app/service/todo_service.dart';
 
 import '../model/task.dart';
 
@@ -20,10 +22,19 @@ class AddNewTaskScreen extends StatefulWidget {
 class _AddNewTaskScreenState extends State<AddNewTaskScreen> {
   TextEditingController titleController = TextEditingController();
   TextEditingController descriptionController = TextEditingController();
-  TextEditingController dateController = TextEditingController();
+  TextEditingController userIdController = TextEditingController();
   TextEditingController timeController = TextEditingController();
 
+  TodoService todoService = TodoService();
+
   TaskType taskType = TaskType.notes;
+
+  void onCategorySelected(TaskType selectedTaskType) {
+    setState(() {
+      taskType = selectedTaskType;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     double deviceHeight = MediaQuery.of(context).size.height;
@@ -33,6 +44,7 @@ class _AddNewTaskScreenState extends State<AddNewTaskScreen> {
       "lib/assets/images/category_2.png",
       "lib/assets/images/category_3.png"
     ];
+
     return SafeArea(
       child: Scaffold(
         backgroundColor: HexColor(backgroundColor),
@@ -94,13 +106,13 @@ class _AddNewTaskScreenState extends State<AddNewTaskScreen> {
                     for (String imgPath in imgPaths)
                       CategoryWidget(
                         title: imgPath,
-                        taskType: taskType,
+                        onCategorySelected: onCategorySelected,
                       ),
                   ],
                 ),
               ),
               DateYearInput(
-                dateController: dateController,
+                dateController: userIdController,
                 timeController: timeController,
               ),
               const Padding(
@@ -119,12 +131,7 @@ class _AddNewTaskScreenState extends State<AddNewTaskScreen> {
               ),
               ElevatedButton(
                   onPressed: () {
-                    Task newTask = Task(
-                        title: titleController.text,
-                        type: taskType,
-                        description: descriptionController.text,
-                        isCompleted: false);
-                    widget.addNewTask(newTask);
+                    saveTodo();
                     Navigator.pop(context);
                   },
                   child: const Text("Save"))
@@ -133,5 +140,15 @@ class _AddNewTaskScreenState extends State<AddNewTaskScreen> {
         ),
       ),
     );
+  }
+
+  void saveTodo() {
+    //alınan inputlara göre bir todo oluşturmak
+    Todo newTodo = Todo(
+        id: -1,
+        todo: titleController.text,
+        completed: false,
+        userId: int.parse(userIdController.text));
+    todoService.addTodo(newTodo);
   }
 }

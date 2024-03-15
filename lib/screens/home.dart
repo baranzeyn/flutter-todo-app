@@ -56,8 +56,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    TodoService todoService=TodoService();
-    todoService.getTodos();
+    TodoService todoService = TodoService();
+    todoService.getUncompleted();
     return MaterialApp(
         debugShowCheckedModeBanner: false,
         home: SafeArea(
@@ -72,21 +72,32 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
                     child: SingleChildScrollView(
-                        child: ListView.builder(
-                      primary:
-                          false, //scrollable olan ögenin SingleChildScrollView olmasını istediğimizden listviewdakini disable ettik
-                      shrinkWrap:
-                          true, //bu olmazsa içinde bulunduğu tüm alanı almaya çalışır
-                      itemCount: todo.length,
-                      itemBuilder: (context, index) {
-                        return TodoItem(
-                          task: todo[index],
-                        );
-                      },
-                    )),
+                      child: FutureBuilder(
+                        future: todoService.getUncompleted(),
+                        builder: (context, snapshot) {
+                          print(snapshot.data);
+                          if (snapshot.data == null) {
+                            return const CircularProgressIndicator();
+                          } else {
+                            return ListView.builder(
+                              primary:
+                                  false, //scrollable olan ögenin SingleChildScrollView olmasını istediğimizden listviewdakini disable ettik
+                              shrinkWrap:
+                                  true, //bu olmazsa içinde bulunduğu tüm alanı almaya çalışır
+                              itemCount: snapshot
+                                  .data!.length, //null gelemezse bunu hesapla
+                              itemBuilder: (context, index) {
+                                return TodoItem(
+                                  task: snapshot.data![index],
+                                );
+                              },
+                            );
+                          }
+                        },
+                      ),
+                    ),
                   ),
-                ),
-                //completed text
+                ), //completed text
                 const Padding(
                   padding: EdgeInsets.only(left: 20),
                   child: Align(
@@ -98,22 +109,38 @@ class _HomeScreenState extends State<HomeScreen> {
                       )),
                 ),
                 //Bottom Column
+
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
                     child: SingleChildScrollView(
-                      child: ListView.builder(
-                          shrinkWrap: true,
-                          primary: false,
-                          itemCount: completed.length,
-                          itemBuilder: (context, index) {
-                            return TodoItem(
-                              task: completed[index],
+                      child: FutureBuilder(
+                        future: todoService.getCompleted(),
+                        builder: (context, snapshot) {
+                          print(snapshot.data);
+                          if (snapshot.data == null) {
+                            return const CircularProgressIndicator();
+                          } else {
+                            return ListView.builder(
+                              primary:
+                              false, //scrollable olan ögenin SingleChildScrollView olmasını istediğimizden listviewdakini disable ettik
+                              shrinkWrap:
+                              true, //bu olmazsa içinde bulunduğu tüm alanı almaya çalışır
+                              itemCount: snapshot
+                                  .data!.length, //null gelemezse bunu hesapla
+                              itemBuilder: (context, index) {
+                                return TodoItem(
+                                  task: snapshot.data![index],
+                                );
+                              },
                             );
-                          }),
+                          }
+                        },
+                      ),
                     ),
                   ),
                 ),
+
                 ElevatedButton(
                     onPressed: () {
                       Navigator.of(context).push(MaterialPageRoute(
